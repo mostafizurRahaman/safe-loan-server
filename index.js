@@ -7,6 +7,12 @@ const app = express();
 const port = process.env.PORT || 5000; 
 
 
+// jwt validation middleware : 
+
+// function verifyJWT(req, res, next){
+//    const authHeader = authorization.header; 
+// }
+
 // middleware here: 
 app.use(express.json()); 
 app.use(cors()); 
@@ -20,7 +26,14 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 async function run(){
    try{
-
+      const usersCollection = client.db('SafeLoan').collection('users'); 
+      
+      // user post api is here: 
+      app.post('/users', async(req, res)=>{
+         const user = req.body;      
+         const result = await usersCollection.insertOne(user); 
+         res.send(result); 
+      })
    }
    finally{
 
