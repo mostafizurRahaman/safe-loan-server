@@ -7,6 +7,8 @@ const app = express();
 const port = process.env.PORT || 5000; 
 
 
+
+
 // jwt validation middleware : 
 
 // function verifyJWT(req, res, next){
@@ -22,11 +24,26 @@ app.use(cors());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.4nkvsmn.mongodb.net/?retryWrites=true&w=majority`;
 
+
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+
 
 async function run(){
    try{
       const usersCollection = client.db('SafeLoan').collection('users'); 
+
+      //create a jwt token : 
+     app.get('/jwt', async(req, res) => {
+         const email = req.query.email; 
+         console.log(email); 
+         const query = {email: email}; 
+         const user = await usersCollection.findOne(query); 
+         if(!user){
+            return res.status(401).send({message: "unauthorized user"}); 
+         }
+         const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET,{expiresIn: "7d"} )
+         res.send({token : token}); 
+     }); 
       
       // user post api is here: 
       app.post('/users', async(req, res)=>{
