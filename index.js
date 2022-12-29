@@ -3,6 +3,7 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const cors = require("cors"); 
 require('dotenv').config(); 
 const jwt = require('jsonwebtoken'); 
+const { response } = require('express');
 const app = express(); 
 const port = process.env.PORT || 5000; 
 
@@ -10,7 +11,6 @@ const port = process.env.PORT || 5000;
 
 
 // jwt validation middleware : 
-
 const  verifyJWT = (req, res, next) => {
    const authHeader = req.headers.authorization; 
    if(!authHeader){
@@ -28,28 +28,25 @@ const  verifyJWT = (req, res, next) => {
    })
 }
 
-// function verifyJWT(req, res, next){
-//    const authHeader = authorization.header; 
-// }
+
+
 
 // middleware here: 
 app.use(express.json()); 
 app.use(cors()); 
 
-// database connect with server: 
-
-
+// database connect with server:
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.4nkvsmn.mongodb.net/?retryWrites=true&w=majority`;
-
-
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 
+// database configuration function is here: 
 async function run(){
    try{
       const usersCollection = client.db('SafeLoan').collection('users'); 
+      const loansCollection = client.db('SafeLoan').collection('loans'); 
 
-      //create a jwt token : 
+   //create a jwt token : 
      app.get('/jwt', async(req, res) => {
          const email = req.query.email; 
          console.log(email); 
@@ -62,15 +59,23 @@ async function run(){
          res.send({token : token}); 
      }); 
       
-      // user post api is here: 
+   // user post api is here: 
       app.post('/users', async(req, res)=>{
          const user = req.body;      
          const result = await usersCollection.insertOne(user); 
          res.send(result); 
       })
+
+
+   //post customer loan application details : 
+      app.post('/loans', async(req, res)=>{
+         const loan = req.body ; 
+         const result =await  loansCollection.insertOne(loan); 
+         res.send(result); 
+      })
    }
    finally{
-
+         
    }
 }
 
