@@ -31,6 +31,7 @@ const  verifyJWT = (req, res, next) => {
 
 
 
+
 // middleware here: 
 app.use(express.json()); 
 app.use(cors()); 
@@ -58,6 +59,30 @@ async function run(){
          const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET,{expiresIn: "7d"} )
          res.send({token : token}); 
      }); 
+
+
+   // verifyAdmin : 
+     const verifyAdmin = async(req, res, next) => {
+         const email = req.decoded.email ; 
+         const query = {email: email}; 
+         const user = await usersCollection.findOne(query); 
+         if(user?.role !== "admin"){
+            return res.status(403).status({message: "forbidden access"}); 
+         }
+         next(); 
+     }
+
+
+   // verifyCuster : 
+   const verifyCustomer = async(req, res, next) => {
+      const email = req.decoded.email; 
+      const query = {email:  email}; 
+      const user = await usersCollection.findOne(query); 
+      if(user?.role !== "customer"){
+         return res.status(403).status({message: "forbidden  access"})
+      }
+      next(); 
+   }
       
    // user post api is here: 
       app.post('/users', async(req, res)=>{
@@ -75,7 +100,7 @@ async function run(){
       })
    }
    finally{
-         
+
    }
 }
 
