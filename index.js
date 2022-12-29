@@ -84,7 +84,7 @@ async function run(){
       next(); 
    }
       
-   // user post api is here: 
+    // user post api is here: 
       app.post('/users', async(req, res)=>{
          const user = req.body;      
          const result = await usersCollection.insertOne(user); 
@@ -92,13 +92,38 @@ async function run(){
       })
 
 
-   //post customer loan application details : 
+    //post customer loan application details : 
       app.post('/loans', async(req, res)=>{
          const loan = req.body ; 
          const result =await  loansCollection.insertOne(loan); 
          res.send(result); 
       })
+
+   // check isAdmin or not : 
+   app.get('/users/admin/:email' , async(req,res)=>{
+      const email = req.params.email; 
+      const query = {email}; 
+      const user = await usersCollection.findOne(query); 
+      const isAdmin = user.role === 'admin'; 
+      res.send({isAdmin: isAdmin}); 
+   })
+
+
+   //check isCustomer or not : 
+   app.get('/users/customer/:email', async(req, res)=>{
+      const email = req.params.email; 
+      const query = {email}; 
+      const user = await usersCollection.findOne(query); 
+      const isCustomer = user.role ===  'customer'; 
+      res.send({isCustomer: isCustomer}); 
+   })
+
+
+
+
+
    }
+
    finally{
 
    }
