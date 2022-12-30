@@ -99,6 +99,15 @@ async function run(){
          res.send(result); 
       })
 
+
+   // create an get api for customer loans: 
+   app.get('/loans', async(req,res)=>{
+      const email = req.query.email; 
+      const query = {email: email}; 
+      const loans = await loansCollection.find(query).toArray(); 
+      res.send(loans); 
+   })
+
    // check isAdmin or not : 
    app.get('/users/admin/:email' , async(req,res)=>{
       const email = req.params.email; 
@@ -118,7 +127,7 @@ async function run(){
       res.send({isCustomer: isCustomer}); 
    })
 
-
+   
 
 
 
