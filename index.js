@@ -1,5 +1,5 @@
 const express = require('express'); 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require("cors"); 
 require('dotenv').config(); 
 const jwt = require('jsonwebtoken'); 
@@ -111,7 +111,22 @@ async function run(){
       const query ={}; 
       const loans = await loansCollection.find(query).toArray(); 
       res.send(loans); 
-   } )
+   })
+
+   //create a update api for loan approval : 
+   app.put('/loans/:id', async(req, res)=>{
+      const id = req.params.id; 
+      const query = {_id: ObjectId(id)}; 
+      const updatedDoc = {
+          $set: {
+             status : "approved" 
+          }
+      }; 
+      const options = {upsert: true}; 
+
+      const result = await loansCollection.updateOne(query, updatedDoc, options); 
+      res.send(result); 
+   })
 
    // check isAdmin or not : 
    app.get('/users/admin/:email' , async(req,res)=>{
@@ -123,6 +138,7 @@ async function run(){
    })
 
 
+
    //check isCustomer or not : 
    app.get('/users/customer/:email', async(req, res)=>{
       const email = req.params.email; 
@@ -130,6 +146,13 @@ async function run(){
       const user = await usersCollection.findOne(query); 
       const isCustomer = user.role ===  'customer'; 
       res.send({isCustomer: isCustomer}); 
+   })
+
+   // get api for all users : 
+   app.get('/users', async(req, res)=>{
+      const query ={}; 
+      const users = await usersCollection.find(query).toArray(); 
+      res.send(users); 
    })
 
    
