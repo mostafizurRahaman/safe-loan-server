@@ -92,14 +92,14 @@ async function run(){
 
 
     //post customer loan application details : 
-      app.post('/loans', async(req, res)=>{
+      app.post('/loans',verifyJWT, verifyCustomer,  async(req, res)=>{
          const loan = req.body ; 
          const result =await  loansCollection.insertOne(loan); 
          res.send(result); 
       })
 
    // create an get api for customer loans: 
-   app.get('/loans', async(req,res)=>{
+   app.get('/loans',verifyJWT, verifyCustomer,  async(req,res)=>{
       const email = req.query.email; 
       const query = {email: email}; 
       const loans = await loansCollection.find(query).toArray(); 
@@ -107,14 +107,14 @@ async function run(){
    })
 
    // create a get api for all loans : 
-   app.get('/admin/loans', async(req, res)=>{
+   app.get('/admin/loans',verifyJWT, verifyAdmin, async(req, res)=>{
       const query ={}; 
       const loans = await loansCollection.find(query).toArray(); 
       res.send(loans); 
    })
 
    //create a update api for loan approval : 
-   app.put('/loans/:id', async(req, res)=>{
+   app.put('/loans/:id',verifyJWT,verifyAdmin,  async(req, res)=>{
       const id = req.params.id; 
       const query = {_id: ObjectId(id)}; 
       const updatedDoc = {
@@ -129,32 +129,54 @@ async function run(){
    })
 
    // check isAdmin or not : 
-   app.get('/users/admin/:email' , async(req,res)=>{
+   app.get('/users/admin/:email',verifyJWT , async(req,res)=>{
       const email = req.params.email; 
       const query = {email}; 
       const user = await usersCollection.findOne(query); 
-      const isAdmin = user.role === 'admin'; 
+      const isAdmin = user?.role === 'admin'; 
       res.send({isAdmin: isAdmin}); 
    })
 
 
 
    //check isCustomer or not : 
-   app.get('/users/customer/:email', async(req, res)=>{
+   app.get('/users/customer/:email',verifyJWT,  async(req, res)=>{
       const email = req.params.email; 
       const query = {email}; 
       const user = await usersCollection.findOne(query); 
-      const isCustomer = user.role ===  'customer'; 
+      const isCustomer = user?.role ===  'customer'; 
       res.send({isCustomer: isCustomer}); 
    })
 
    // get api for all users : 
-   app.get('/users', async(req, res)=>{
+   app.get('/users',verifyJWT, verifyAdmin, async(req, res)=>{
       const query ={}; 
       const users = await usersCollection.find(query).toArray(); 
       res.send(users); 
    })
 
+   // delete user : 
+   app.delete('/users/:id',verifyJWT,  verifyAdmin, async(req, res)=>{
+      const id = req.params.id; 
+      const query = {_id: ObjectId(id)}; 
+      const  user = await usersCollection.deleteOne(query); 
+      res.send(user); 
+   })
+
+
+   //create user admin: 
+   app.put('/users/:email',verifyJWT, verifyAdmin, async(req, res)=>{
+      const email = req.params.email; 
+      const query = {email: email};
+      const updatedDoc = {
+         $set: {
+            role : "admin"
+         }
+      }
+      const options = {upsert: true}; 
+      const result  = await usersCollection.updatedOne(query, updatedDoc, options); 
+      res.send(result); 
+   })
    
 
 
