@@ -17,7 +17,6 @@ const  verifyJWT = (req, res, next) => {
    }
 
    const token = authHeader.split(' ')[1]; 
-   console.log(token); 
    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function(error, decoded){
       if(error){
          return res.status(403).send({message: 'forbidden access'});
@@ -174,7 +173,7 @@ async function run(){
          }
       }
       const options = {upsert: true}; 
-      const result  = await usersCollection.updatedOne(query, updatedDoc, options); 
+      const result  = await usersCollection.updateOne(query, updatedDoc, options);  
       res.send(result); 
    })
    
